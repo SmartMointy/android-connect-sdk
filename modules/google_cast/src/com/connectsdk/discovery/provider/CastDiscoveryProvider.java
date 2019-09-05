@@ -1,10 +1,10 @@
 /*
  * CastDiscoveryProvider
  * Connect SDK
- * 
+ *
  * Copyright (c) 2014 LG Electronics.
  * Created by Hyun Kook Khang on 20 Feb 2014
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -74,7 +74,7 @@ public class CastDiscoveryProvider implements DiscoveryProvider {
 
     @Override
     public void start() {
-        if (isRunning) 
+        if (isRunning)
             return;
 
         isRunning = true;
@@ -136,8 +136,10 @@ public class CastDiscoveryProvider implements DiscoveryProvider {
 
             @Override
             public void run() {
+            	mMediaRouter.removeCallback(mMediaRouterCallback);
                 mMediaRouter.addCallback(mMediaRouteSelector, mMediaRouterCallback,
-                        MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
+                    MediaRouter.CALLBACK_FLAG_FORCE_DISCOVERY |
+                    MediaRouter.CALLBACK_FLAG_PERFORM_ACTIVE_SCAN);
             }
         });
     }
@@ -171,14 +173,20 @@ public class CastDiscoveryProvider implements DiscoveryProvider {
         @Override
         public void onRouteAdded(MediaRouter router, RouteInfo route) {
             super.onRouteAdded(router, route);
-
             CastDevice castDevice = CastDevice.getFromBundle(route.getExtras());
+            removedUUID.remove(castDevice.getDeviceId());
+            addOrUpdateDevice(route, castDevice);
+        }
+
+        @Override
+        public void onRouteChanged(MediaRouter router, RouteInfo route) {
+            super.onRouteChanged(router, route);
+            addOrUpdateDevice(route, CastDevice.getFromBundle(route.getExtras()));
+        }
+
+        private void addOrUpdateDevice(RouteInfo route, CastDevice castDevice) {
             String uuid = castDevice.getDeviceId();
-
-            removedUUID.remove(uuid);
-
             ServiceDescription foundService = foundServices.get(uuid);
-
             boolean isNew = foundService == null;
             boolean listUpdateFlag = false;
 
@@ -196,6 +204,13 @@ public class CastDiscoveryProvider implements DiscoveryProvider {
                 listUpdateFlag = true;
             }
             else {
+                foundService.setIpAddress(castDevice.getIpAddress().getHostAddress());
+                foundService.setModelName(castDevice.getModelName());
+                foundService.setModelNumber(castDevice.getDeviceVersion());
+                foundService.setModelDescription(route.getDescription());
+                foundService.setPort(castDevice.getServicePort());
+                foundService.setDevice(castDevice);
+
                 if (!foundService.getFriendlyName().equals(castDevice.getFriendlyName())) {
                     foundService.setFriendlyName(castDevice.getFriendlyName());
                     listUpdateFlag = true;
@@ -209,45 +224,8 @@ public class CastDiscoveryProvider implements DiscoveryProvider {
             foundServices.put(uuid, foundService);
 
             if (listUpdateFlag) {
-                for (DiscoveryProviderListener listenter: serviceListeners) {
-                    listenter.onServiceAdded(CastDiscoveryProvider.this, foundService);
-                }
-            }
-        }
-
-        @Override
-        public void onRouteChanged(MediaRouter router, RouteInfo route) {
-            super.onRouteChanged(router, route);
-
-            CastDevice castDevice = CastDevice.getFromBundle(route.getExtras());
-            String uuid = castDevice.getDeviceId();
-
-            ServiceDescription foundService = foundServices.get(uuid);
-
-            boolean isNew = foundService == null;
-            boolean listUpdateFlag = false;
-
-            if (!isNew) {
-                foundService.setIpAddress(castDevice.getIpAddress().getHostAddress());
-                foundService.setModelName(castDevice.getModelName());
-                foundService.setModelNumber(castDevice.getDeviceVersion());
-                foundService.setModelDescription(route.getDescription());
-                foundService.setPort(castDevice.getServicePort());
-                foundService.setDevice(castDevice);
-
-                if (!foundService.getFriendlyName().equals(castDevice.getFriendlyName())) {
-                    foundService.setFriendlyName(castDevice.getFriendlyName());
-                    listUpdateFlag = true;
-                }
-
-                foundService.setLastDetection(new Date().getTime());
-
-                foundServices.put(uuid, foundService);
-
-                if (listUpdateFlag) {
-                    for (DiscoveryProviderListener listenter: serviceListeners) {
-                        listenter.onServiceAdded(CastDiscoveryProvider.this, foundService);
-                    }
+                for (DiscoveryProviderListener listener: serviceListeners) {
+                    listener.onServiceAdded(CastDiscoveryProvider.this, foundService);
                 }
             }
         }
@@ -265,8 +243,7 @@ public class CastDiscoveryProvider implements DiscoveryProvider {
             super.onRouteRemoved(router, route);
 
             CastDevice castDevice = CastDevice.getFromBundle(route.getExtras());
-            String uuid = castDevice.getDeviceId();
-            removedUUID.add(uuid);
+            removedUUID.add(castDevice.getDeviceId());
 
             // Prevent immediate removing. There are some cases when service is removed and added
             // again after a second.
