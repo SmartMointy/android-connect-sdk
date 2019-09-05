@@ -50,3 +50,6 @@ local.properties
 .buildpath
 
 *.DS_Store
+
+.idea/
+*.iml
