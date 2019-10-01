@@ -1,5 +1,6 @@
 package com.connectsdk.service.upnp;
 
+import android.util.Log;
 import android.util.Xml;
 
 import com.connectsdk.core.ImageInfo;
@@ -56,8 +57,10 @@ public class DLNAMediaInfoParser {
             }
         } catch (XmlPullParserException e) {
             e.printStackTrace();
+            Log.e("DLNAMediaInfoParser", "Content: " + str);
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e("DLNAMediaInfoParser", "Content: " + str);
         }
 
         return "";

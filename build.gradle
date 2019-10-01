@@ -78,9 +78,9 @@ dependencies {
 
 	implementation fileTree(dir: 'modules/firetv/libs', include: '*.jar')
 
-	api 'androidx.appcompat:appcompat:1.0.2'
-	api 'androidx.mediarouter:mediarouter:1.0.0'
-	api 'com.google.android.gms:play-services-cast:17.0.0'
+	api 'androidx.appcompat:appcompat:1.1.0'
+	api 'androidx.mediarouter:mediarouter:1.1.0'
+	api 'com.google.android.gms:play-services-cast:17.1.0'
 
 	testImplementation 'org.apache.maven:maven-ant-tasks:2.1.3'
 	testImplementation 'junit:junit:4.12'
