@@ -467,7 +467,7 @@ public class AirPlayService extends DeviceService implements MediaPlayer, MediaC
         };
 
         String uri = getRequestURL("play");
-        String payload = null;
+        String payload;
 
         PListBuilder builder = new PListBuilder();
         builder.putString("Content-Location", url);
@@ -532,7 +532,7 @@ public class AirPlayService extends DeviceService implements MediaPlayer, MediaC
                     sb.append(serviceCommand.getTarget());
 
                     HttpConnection connection = HttpConnection.newInstance(URI.create(sb.toString()));
-                    connection.setHeader(HTTP.USER_AGENT, "ConnectSDK MediaControl/1.0");
+                    connection.setHeader(HTTP.USER_AGENT, "MediaControl/1.0");
                     connection.setHeader(X_APPLE_SESSION_ID, mSessionId);
                     if (password != null) {
                         String authorization = getAuthenticate(serviceCommand.getHttpMethod(), serviceCommand.getTarget(), authenticate);
@@ -559,6 +559,17 @@ public class AirPlayService extends DeviceService implements MediaPlayer, MediaC
                     }
                     connection.execute();
                     int code = connection.getResponseCode();
+                    StringBuilder headers = new StringBuilder();
+                    for(Map.Entry<String, String> header : connection.getResponseHeaders().entrySet()) {
+                        headers.append("  ").append(header.getKey()).append(": ").append(header.getValue()).append("\n");
+                    }
+                    Log.e("AirPlayService",
+						"Request " + sb.toString() +
+							"\nCode: " + code +
+							"\nReason: " + connection.getResponseReason() +
+							"\nHeaders:" + headers.toString() +
+							"\nBody: " + connection.getResponseString()
+                        );
                     if (code == HttpURLConnection.HTTP_OK) {
                         Util.postSuccess(serviceCommand.getResponseListener(), connection.getResponseString());
                     } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {

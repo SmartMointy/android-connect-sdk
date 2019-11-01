@@ -31,6 +31,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,6 +53,8 @@ public abstract class HttpConnection {
 
     public abstract int getResponseCode() throws IOException;
 
+    public abstract String getResponseReason() throws IOException;
+
     public abstract String getResponseString() throws IOException;
 
     public abstract void execute() throws IOException;
@@ -63,6 +66,8 @@ public abstract class HttpConnection {
     public abstract void setHeader(String name, String value);
 
     public abstract String getResponseHeader(String name);
+
+    public abstract Map<String, String> getResponseHeaders();
 
     public enum Method {
         GET,
@@ -78,6 +83,7 @@ public abstract class HttpConnection {
         private final HttpURLConnection connection;
         private byte[] payload;
         private String response;
+        private String responseReason;
         private int responseCode;
 
         private HttpURLConnectionClient(URI uri) throws IOException {
@@ -92,6 +98,11 @@ public abstract class HttpConnection {
         @Override
         public int getResponseCode() throws IOException {
             return responseCode;
+        }
+
+        @Override
+        public String getResponseReason() throws IOException {
+            return responseReason;
         }
 
         @Override
@@ -124,6 +135,7 @@ public abstract class HttpConnection {
                     // it's OK, we have a response code
                 }
                 responseCode = connection.getResponseCode();
+                responseReason = connection.getResponseMessage();
             } finally {
                 connection.disconnect();
             }
@@ -150,6 +162,19 @@ public abstract class HttpConnection {
         public String getResponseHeader(String name) {
             return connection.getHeaderField(name);
         }
+
+        @Override
+        public Map<String, String> getResponseHeaders() {
+            HashMap<String, String> newHeaders = new HashMap<>();
+            final Map<String, List<String>> headers = connection.getHeaderFields();
+            for(Map.Entry<String, List<String>> header : headers.entrySet()) {
+                final List<String> values = header.getValue();
+                for(int i = 0; i < values.size(); i++){
+                    newHeaders.put(header.getKey(), values.get(i));
+                }
+            }
+            return newHeaders;
+        }
     }
 
     private static class CustomConnectionClient extends HttpConnection {
@@ -159,6 +184,7 @@ public abstract class HttpConnection {
         private String payload;
         private Map<String, String> headers = new LinkedHashMap<String, String>();
         private int code;
+        private String reason;
         private String response;
         private Map<String, String> responseHeaders = new HashMap<String, String>();
 
@@ -174,6 +200,13 @@ public abstract class HttpConnection {
         @Override
         public int getResponseCode() throws IOException {
             return code;
+        }
+
+        @Override
+        public String getResponseReason()
+            throws IOException
+        {
+            return reason;
         }
 
         @Override
@@ -221,9 +254,10 @@ public abstract class HttpConnection {
             String line;
             line = reader.readLine();
             if (line != null) {
-                String[] tokens = line.split(" ");
+                String[] tokens = line.split(" ", 3);
                 if (tokens.length > 2) {
                     code = Integer.parseInt(tokens[1]);
+                    reason = tokens[2];
                 }
             }
 
@@ -232,7 +266,7 @@ public abstract class HttpConnection {
                     break;
                 }
                 String[] pair = line.split(":", 2);
-                if (pair != null && pair.length == 2) {
+                if (pair.length == 2) {
                     responseHeaders.put(pair[0].trim(), pair[1].trim());
                 }
             }
@@ -265,6 +299,12 @@ public abstract class HttpConnection {
         @Override
         public String getResponseHeader(String name) {
             return responseHeaders.get(name);
+        }
+
+        @Override
+        public Map<String, String> getResponseHeaders()
+        {
+            return responseHeaders;
         }
     }
 
