@@ -44,7 +44,7 @@ public class AirPlayAuth {
     private static final int SOCKET_TIMEOUT = 60 * 1000;
 
     public final InetSocketAddress address;
-    private final String clientId;
+    public final String clientId;
     private final EdDSAPrivateKey authKey;
 
     /**
@@ -142,8 +142,8 @@ public class AirPlayAuth {
 
     private PairSetupPin1Response doPairSetupPin1(Socket socket) throws Exception {
         byte[] pairSetupPinRequestData = AuthUtils.createPList(new HashMap<String, String>() {{
-            put("method", "pin");
             put("user", clientId);
+            put("method", "pin");
         }});
 
         byte[] pairSetupPin1ResponseBytes = AuthUtils.performRequest(socket, "POST", "/pair-setup-pin", "application/x-apple-binary-plist", pairSetupPinRequestData);
@@ -176,11 +176,11 @@ public class AirPlayAuth {
     private PairSetupPin3Response doPairSetupPin3(Socket socket, final byte[] sessionKeyHashK) throws Exception {
 
         MessageDigest sha512Digest = MessageDigest.getInstance("SHA-512");
-        sha512Digest.update("Pair-Setup-AES-Key".getBytes(StandardCharsets.UTF_8));
+        sha512Digest.update("Pair-Setup-AES-Key".getBytes("UTF-8"));
         sha512Digest.update(sessionKeyHashK);
         byte[] aesKey = Arrays.copyOfRange(sha512Digest.digest(), 0, 16);
 
-        sha512Digest.update("Pair-Setup-AES-IV".getBytes(StandardCharsets.UTF_8));
+        sha512Digest.update("Pair-Setup-AES-IV".getBytes("UTF-8"));
         sha512Digest.update(sessionKeyHashK);
         byte[] aesIV = Arrays.copyOfRange(sha512Digest.digest(), 0, 16);
 

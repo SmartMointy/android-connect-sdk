@@ -1,5 +1,6 @@
 package eu.airaudio.airplay.auth;
 
+import android.net.Uri;
 import android.util.Log;
 
 import com.dd.plist.NSDictionary;
@@ -42,11 +43,12 @@ public class AuthUtils {
     }
 
     public static byte[] performRequest(Socket socket, String method, String path, @Nullable String contentType, @Nullable byte[] data) throws IOException {
-        Log.d("AirPlayService","performRequest: " + method + " http:/" + socket.getInetAddress().toString() + ":" +
-            socket.getPort() + path + " > " + contentType + ": " + (data != null ? data.length : 0));
+        final Uri uri = Uri.parse("http:/" + socket.getInetAddress().toString() + ":" + socket.getPort() + path);
+        Log.d("AirPlayService","performRequest: " + method + " " + uri.toString() + " > " + contentType + ": " + (data != null ? data.length : 0));
+        Log.d("AirPlayService", "body: " + (data != null ? bytesToHex(data) : "<none>"));
         DataOutputStream wr = new DataOutputStream(socket.getOutputStream());
-        wr.writeBytes(method + " " + path + " HTTP/1.0\r\n");
-        wr.writeBytes("User-Agent: AirPlay/320.20\r\n");
+        wr.writeBytes(method + " " + path + " HTTP/1.1\r\n");
+        wr.writeBytes("Host: " + uri.getHost() + "\r\n");
         wr.writeBytes("Connection: keep-alive\r\n");
 
         if (data != null) {
@@ -117,6 +119,18 @@ public class AuthUtils {
         }
         String line = byteArrayOutputStream.toString("UTF-8");
         return line;
+    }
+
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     public static String randomString(final int length) {

@@ -68,7 +68,7 @@ import eu.airaudio.airplay.auth.AuthUtils;
 public class AirPlayService extends DeviceService implements MediaPlayer, MediaControl {
     public static final String ID = "AirPlay";
     private static final long KEEP_ALIVE_PERIOD = 15000;
-    private static final String STORED_AUTH_TOKEN = "PVOEBQQ1KN2GPVD2@302e020100300506032b657004220420c133d9f533372d71b892e4505e23e278aa3b49b397cb5bcb499c1c64aaaad67c";
+    private static final String STORED_AUTH_TOKEN = "65DDAD3A366B4164@302e020100300506032b657004220420c133d9f533372d71b892e4505e23e278aa3b49b397cb5bcb499c1c64aaaad67c";
 
     private final static String CHARSET = "UTF-8";
 
@@ -99,7 +99,7 @@ public class AirPlayService extends DeviceService implements MediaPlayer, MediaC
     public AirPlayService(ServiceDescription serviceDescription,
             ServiceConfig serviceConfig) throws IOException {
         super(serviceDescription, serviceConfig);
-        pairingType = PairingType.FIRST_SCREEN;
+        pairingType = PairingType.PIN_CODE;
         airPlayAuth = new AirPlayAuth(new InetSocketAddress(serviceDescription.getIpAddress(), serviceDescription.getPort()), STORED_AUTH_TOKEN);
     }
 
@@ -596,6 +596,7 @@ public class AirPlayService extends DeviceService implements MediaPlayer, MediaC
             public void run()
             {
                 try{
+                    Log.d("AirPlayService", "Sending Pairing Key: " + pairingKey);
                     airPlayAuth.doPairing(socket, pairingKey);
                     if (pendingCommand != null)
                         pendingCommand.send();
@@ -698,6 +699,7 @@ public class AirPlayService extends DeviceService implements MediaPlayer, MediaC
 
         if(socket != null){
             try{
+                Log.e("AirPlayService", "Closing Socket");
                 socket.close();
             }
             catch(IOException e){
