@@ -6,10 +6,11 @@
 [![Apache License, 2.0](https://img.shields.io/github/license/ConnectSDK/Connect-SDK-Android.svg)](https://github.com/ConnectSDK/Connect-SDK-Android/blob/master/LICENSE)
 [![Twitter](https://img.shields.io/badge/twitter-@ConnectSDK-blue.svg)](https://twitter.com/connectsdk)
 
-Connect SDK is an open source framework that connects your mobile apps with multiple TV platforms. Because most TV platforms support a variety of protocols, Connect SDK integrates and abstracts the discovery and connectivity between all supported protocols.
-This project can be built in Android Studio or directly with Gradle. Eclipse IDE is not supported since 1.5.0 version.
+This is a slidly modified version of Connect SDK, which is an open source framework that connects your mobile apps with multiple TV platforms. Because most TV platforms support a variety of protocols, Connect SDK integrates and abstracts the discovery and connectivity between all supported protocols.
 
-For more information, visit our [website](http://www.connectsdk.com/).
+After cloning this project, it should be running out of the box, while the original repisotory is outdated and can't be used in most of the newer projects. Also, there where some bugs that are fixed in this version.
+
+For usage and docs, visit this [website](http://www.connectsdk.com/).
 
 * [General information about Connect SDK](http://www.connectsdk.com/discover/)
 * [Platform documentation & FAQs](http://www.connectsdk.com/docs/android/)
@@ -27,24 +28,12 @@ This project has the following dependencies.
 * [Connect-SDK-Android-FireTV](https://github.com/ConnectSDK/Connect-SDK-Android-FireTV) submodule
   - Requires [AmazonFling.framework](https://developer.amazon.com/public/apis/experience/fling/docs/amazon-fling-sdk-download)
 
-##Including Connect SDK in your app with Android Studio
-Edit your project's build.gradle to add this in the "dependencies" section
-```groovy
-dependencies {
-    //...
-    compile 'com.connectsdk:connect-sdk-android:1.6.0'
-}
-```
-This prebuilt library doesn't have Amazon Fling SDK support, because it’s not available on maven. You need to set the project up from sources
-if you want to have Amazon Fling SDK support.
 
-##Including Connect SDK in your app with Android Studio from sources
+##Steps to include Connect-SDK to your project
 1. Open your terminal and execute these commands
     ```
     cd your_project_folder
-    git clone https://github.com/ConnectSDK/Connect-SDK-Android.git
-    cd Connect-SDK-Android
-    git submodule update --init
+    git clone https://github.com/SmartMointy/android-connect-sdk/
     ```
 
 2. On the root of your project directory create/modify the settings.gradle file. It should contain something like the following:
@@ -56,13 +45,11 @@ if you want to have Amazon Fling SDK support.
     ```groovy
     dependencies {
         //...
-        compile project(':Connect-SDK-Android')
+        implementation project(':Connect-SDK-Android')
     }
     ```
 
-4. Setup [FireTV submodule](https://github.com/ConnectSDK/Connect-SDK-Android-FireTV)
-5. Sync project with gradle files
-6. Add permissions to your manifest
+4. Add permissions to your manifest
 
 ###Permissions to include in manifest
 * Required for SSDP & Chromecast/Zeroconf discovery
