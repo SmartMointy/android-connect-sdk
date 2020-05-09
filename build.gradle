@@ -4,7 +4,7 @@ buildscript {
 		jcenter()
 	}
 	dependencies {
-		classpath 'com.android.tools.build:gradle:3.5.0'
+		classpath 'com.android.tools.build:gradle:3.6.3'
 	}
 }
 
@@ -20,7 +20,7 @@ apply plugin: 'com.android.library'
 android {
 	useLibrary 'org.apache.http.legacy'
 
-	compileSdkVersion 28
+	compileSdkVersion 29
 
 	defaultConfig {
 		minSdkVersion 16
@@ -80,7 +80,7 @@ dependencies {
 
 	api 'androidx.appcompat:appcompat:1.1.0'
 	api 'androidx.mediarouter:mediarouter:1.1.0'
-	api 'com.google.android.gms:play-services-cast:17.1.0'
+	api 'com.google.android.gms:play-services-cast:18.1.0'
 
 	testImplementation 'org.apache.maven:maven-ant-tasks:2.1.3'
 	testImplementation 'junit:junit:4.12'
